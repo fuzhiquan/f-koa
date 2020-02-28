@@ -13,7 +13,10 @@ function defineSetter(attr ,key) {
 }
 
 defineGetter('request', 'method')
+defineGetter('request', 'path')
 defineGetter('response', 'body')
+defineGetter('response', 'set')
+defineGetter('response', 'statusCode')
 defineSetter('response', 'body')
 
 module.exports = context
