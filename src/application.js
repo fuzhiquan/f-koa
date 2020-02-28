@@ -29,8 +29,11 @@ class Application extends eventEmitter {
     }
 
     _compose(middlewares, ctx) {
+        let i = -1
         function dispatch(index) {
+            if(i <= index) return Promise.reject('next() call mutiple times')
             if(index === middlewares.length) return Promise.resolve()
+            i = index
             return Promise.resolve(middlewares[index](ctx, () => dispatch(index+1)))
         }
         return dispatch(0)
