@@ -11,10 +11,11 @@ class Application extends eventEmitter {
         this.context = Object.create(context)
         this.request = Object.create(request)
         this.response = Object.create(response)
+        this.middlewares = []
     }
 
     use(fn) {
-        this.fn = fn
+        this.middlewares.push(fn)
     }
 
     _createContext(req, res) {
@@ -27,22 +28,30 @@ class Application extends eventEmitter {
         return ctx
     }
 
+    _compose(middlewares, ctx) {
+        function dispatch(index) {
+            if(index === middlewares.length) return Promise.resolve()
+            return Promise.resolve(middlewares[index](ctx, () => dispatch(index+1)))
+        }
+        return dispatch(0)
+    }
+
     _handleRequest(req, res) {
         const ctx = this._createContext(req, res)
-        this.fn(ctx)
+        this._compose(this.middlewares, ctx).then(() => {
+            const body = ctx.body
 
-        const body = ctx.body
-
-        if(body instanceof Stream) {
-            body.pipe(res)
-        }else if(typeof body === 'object') {
-            res.end(JSON.stringify(body))
-        }else if(typeof body === 'string' || Buffer.isBuffer(body)) {
-            res.end(body)
-        }else {
-            ctx.statusCode(404)
-            res.end('not found')
-        }
+            if(body instanceof Stream) {
+                body.pipe(res)
+            }else if(typeof body === 'object') {
+                res.end(JSON.stringify(body))
+            }else if(typeof body === 'string' || Buffer.isBuffer(body)) {
+                res.end(body)
+            }else {
+                ctx.statusCode(404)
+                res.end('not found')
+            }
+        })
     }
 
     listen(...args) {
