@@ -6,10 +6,10 @@ module.exports = () => {
                 arr.push(chunk)
             })
             ctx.req.on('end', () => {
-                ctx.request.body = Buffer.concat(arr).toString()
+                ctx.request.body = Buffer.concat(arr)
                 resolve()
             })
         })
-        next()
+        await next()
     }
 }

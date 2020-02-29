@@ -27,7 +27,11 @@ class Application extends eventEmitter {
 
         return ctx
     }
-
+    /**
+     * _compose一定要返回一个promise，洋葱模型
+     * @param {*} middlewares 
+     * @param {*} ctx 
+     */
     _compose(middlewares, ctx) {
         let i = -1
         function dispatch(index) {
